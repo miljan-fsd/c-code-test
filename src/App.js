@@ -8,21 +8,101 @@ class App extends Component {
 		super(props);
 		this.state = {
 			fromFld: 1,
-			toFld: 20
+			toFld: 20,
+			data: [],
+			errorMsg: ''
 		};
 	}
 
 	handleClick(e) {
 		e.preventDefault();
 
+		this.sendRequest();
+	}
 
-		console.log('ok');
+	sendRequest() {
+		let { fromFld, toFld, errorMsg } = this.state;
+
+		if (fromFld < 1 || fromFld > 1000 || toFld < 1 || toFld > 1000) {
+			errorMsg = 'Range must be between 1 and 1000.';
+
+			this.setState({
+				errorMsg 
+			});
+		} else {
+
+			const tokenUrl = 'https://veil-deposit.glitch.me/api/token';
+			const dataUrl = 'https://veil-deposit.glitch.me/api/data?';
+			const methodType = {
+				method: 'GET'
+			};
+
+			fetch(tokenUrl, methodType)
+				.then((response) => response.json())
+				.then((json) => {
+					let { token } = json;
+
+					console.log(token, fromFld, toFld);
+
+					fetch(`${dataUrl}from=${fromFld}&to=${toFld}&token=${token}`, methodType)
+						.then((response) => response.json())
+						.then((json) => {
+							let { data, error } = json;
+
+							if (error) {
+								console.log(error.message);
+							}
+
+							this.setState({
+								data
+							});
+							console.log(data[0]);
+						})
+						.catch((error) => {
+							console.log(`There has been a problem: ${error.message}`);
+						});
+					})
+					.catch((error) => {
+						console.log(`There has been a problem: ${error.message}`);
+					});
+		}
 	}
 	
+	renderData() {
+		return this.state.data.map((item, key) => {
+			let { index, slot, city, velocity} = item;
+
+			slot = slot || '0';
+			city = city || 'None';
+			velocity = velocity || '0.00';
+
+			return (
+				<tr key={key}>
+					<th scope="row">{index}</th>
+					<td>{slot}</td>
+					<td>{city}</td>
+					<td>{velocity}</td>
+				</tr>
+			);
+		});
+	}
+
+	componentDidMount() {
+		this.sendRequest();
+	}
+
   render() {
+		console.log(this.state.fromFld, this.state.toFld);
+
     return (
       <div className="container">
 				<AppTitle title="C-Code Front-End Test" />
+
+				{
+					(this.state.errorMsg !== '')
+					? <div className="alert alert-danger">{this.state.errorMsg}</div>
+					: ''
+				}
 
 				<form className="mb-5">
 					<fieldset>
@@ -40,10 +120,14 @@ class App extends Component {
 
 							<div className="col-10">
 								<input
+									min="1"
+									max="1000"
 									className="form-control" 
 									type="number" 
 									id="fromFld"
-									defaultValue={this.state.fromFld} 
+									name="fromFld"
+									value={this.state.fromFld}
+									onChange={(event) => this.setState({ fromFld: event.target.value})} 
 								/>
 							</div>
 						</div>
@@ -57,11 +141,15 @@ class App extends Component {
 							</label>
 
 							<div className="col-10">
-								<input 
+								<input
+									min="1"
+									max="1000" 
 									className="form-control" 
 									type="number" 
 									id="toFld" 
-									defaultValue={this.state.toFld}
+									name="toFld" 
+									value={this.state.toFld}
+									onChange={(event) => this.setState({ toFld: event.target.value})}
 								/>
 							</div>
 						</div>
@@ -90,24 +178,9 @@ class App extends Component {
 						</tr>
 					</thead>
 					<tbody>
-						<tr>
-							<th scope="row">1</th>
-							<td>8</td>
-							<td>Carleton Place</td>
-							<td>265.68</td>
-						</tr>
-						<tr>
-							<th scope="row">2</th>
-							<td>Jacob</td>
-							<td>Thornton</td>
-							<td>@fat</td>
-						</tr>
-						<tr>
-							<th scope="row">3</th>
-							<td>Larry</td>
-							<td>the Bird</td>
-							<td>@twitter</td>
-						</tr>
+						{
+							this.renderData()
+						}
 					</tbody>
 				</table>
 

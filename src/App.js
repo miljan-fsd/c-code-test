@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import './css/App.css';
 
+import loadingGif from './imgs/loading.gif';
+
 import AppTitle from './components/AppTitle.jsx';
 import Error from './components/Error.jsx';
 
@@ -11,18 +13,23 @@ class App extends Component {
 			fromFld: 1,
 			toFld: 20,
 			data: [],
-			errorMsg: ''
+			errorMsg: '',
+			isLoading: true
 		};
 	}
 
 	handleClick(e) {
 		e.preventDefault();
 
+		this.setState({
+			isLoading: true
+		});
+
 		this.sendRequest();
 	}
 
 	sendRequest() {
-		let { fromFld, toFld, errorMsg } = this.state;
+		let { fromFld, toFld, errorMsg, isLoading } = this.state;
 
 		if (fromFld < 1 || fromFld > 1000 || toFld < 1 || toFld > 1000) {
 			errorMsg = 'Range must be between 1 and 1000.';
@@ -43,8 +50,6 @@ class App extends Component {
 				.then((json) => {
 					let { token } = json;
 
-					console.log(token, fromFld, toFld);
-
 					fetch(`${dataUrl}from=${fromFld}&to=${toFld}&token=${token}`, methodType)
 						.then((response) => response.json())
 						.then((json) => {
@@ -58,10 +63,12 @@ class App extends Component {
 							});
 							}
 
+							isLoading = false;
+
 							this.setState({
-								data
+								data,
+								isLoading
 							});
-							console.log(data[0]);
 						})
 						.catch((error) => {
 							console.log(`There has been a problem: ${error.message}`);
@@ -97,8 +104,6 @@ class App extends Component {
 	}
 
   render() {
-		console.log(this.state.fromFld, this.state.toFld);
-
     return (
       <div className="container">
 				<AppTitle title="C-Code Front-End Test" />
@@ -169,21 +174,27 @@ class App extends Component {
 					</fieldset>
 				</form>
 				
-				<table className="table table-striped">
-					<thead className="thead-inverse">
-						<tr>
-							<th>Index</th>
-							<th>Slot</th>
-							<th>City</th>
-							<th>Velocity</th>
-						</tr>
-					</thead>
-					<tbody>
-						{
-							this.renderData()
-						}
-					</tbody>
-				</table>
+				{
+					this.state.isLoading ?
+					<div className="text-center">
+						<img src={loadingGif} alt="Loading Gif"/>
+					</div> :
+					<table className="table table-striped">
+						<thead className="thead-inverse">
+							<tr>
+								<th>Index</th>
+								<th>Slot</th>
+								<th>City</th>
+								<th>Velocity</th>
+							</tr>
+						</thead>
+						<tbody>
+							{
+								this.renderData()
+							}
+						</tbody>
+					</table>
+				}
 
       </div>
     );

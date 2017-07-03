@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './css/App.css';
 
 import AppTitle from './components/AppTitle.jsx';
+import Error from './components/Error.jsx';
 
 class App extends Component {
 	constructor(props) {
@@ -50,7 +51,11 @@ class App extends Component {
 							let { data, error } = json;
 
 							if (error) {
-								console.log(error.message);
+								errorMsg = 'Range must be between 1 and 1000.';
+
+							this.setState({
+								errorMsg 
+							});
 							}
 
 							this.setState({
@@ -69,7 +74,7 @@ class App extends Component {
 	}
 	
 	renderData() {
-		return this.state.data.map((item, key) => {
+		return this.state.data.map((item) => {
 			let { index, slot, city, velocity} = item;
 
 			slot = slot || '0';
@@ -77,7 +82,7 @@ class App extends Component {
 			velocity = velocity || '0.00';
 
 			return (
-				<tr key={key}>
+				<tr key={index}>
 					<th scope="row">{index}</th>
 					<td>{slot}</td>
 					<td>{city}</td>
@@ -98,11 +103,7 @@ class App extends Component {
       <div className="container">
 				<AppTitle title="C-Code Front-End Test" />
 
-				{
-					(this.state.errorMsg !== '')
-					? <div className="alert alert-danger">{this.state.errorMsg}</div>
-					: ''
-				}
+				<Error error={this.state.errorMsg} />
 
 				<form className="mb-5">
 					<fieldset>

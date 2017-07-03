@@ -33,9 +33,19 @@ class App extends Component {
 
 		if (fromFld < 1 || fromFld > 1000 || toFld < 1 || toFld > 1000) {
 			errorMsg = 'Range must be between 1 and 1000.';
+			isLoading = false;
 
 			this.setState({
-				errorMsg 
+				errorMsg,
+				isLoading
+			});
+		} else if (fromFld > toFld) {
+			errorMsg = 'The value of \'To\' field must not be less than the value of \'From\' field.';
+			isLoading = false;
+
+			this.setState({
+				errorMsg ,
+				isLoading
 			});
 		} else {
 
@@ -134,6 +144,7 @@ class App extends Component {
 									name="fromFld"
 									value={this.state.fromFld}
 									onChange={(event) => this.setState({ fromFld: event.target.value})} 
+									onFocus={() => this.setState({errorMsg: ''})}
 								/>
 							</div>
 						</div>
@@ -156,6 +167,7 @@ class App extends Component {
 									name="toFld" 
 									value={this.state.toFld}
 									onChange={(event) => this.setState({ toFld: event.target.value})}
+									onFocus={() => this.setState({errorMsg: ''})}
 								/>
 							</div>
 						</div>
